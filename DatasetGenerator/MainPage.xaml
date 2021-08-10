@@ -13,7 +13,7 @@
         <NavigationView.MenuItems>
             <NavigationViewItem Content="Home" Icon="Home" Tag="Nvi_Home" IsSelected="True"/>
             <NavigationViewItem Content="Neue Daten generieren" Icon="Add" Tag="Nvi_Generate"/>
-            <NavigationViewItem Content="Daten managen" Icon="Library" Tag="Nvi_Manage"/>
+            <NavigationViewItem Content="Datensätze managen" Icon="Library" Tag="Nvi_Manage"/>
         </NavigationView.MenuItems>
         <Frame x:Name="Frm_Content"/>
     </NavigationView>

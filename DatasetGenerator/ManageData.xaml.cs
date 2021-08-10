@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Storage.Pickers;
 using System.Threading.Tasks;
 using System.Threading;
+using Windows.UI.Xaml.Media.Imaging;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
@@ -126,7 +127,107 @@ namespace DatasetGenerator
             {
                 Cmd_Export.IsEnabled = true;
                 Cmd_DeleteDataset.IsEnabled = true;
+
+                Load_Images((Lsv_Datasets.SelectedItem as Dataset).Name);
             }
+        }
+
+        private async void Load_Images(string DatasetName)
+        {
+            StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
+            StorageFolder sourceFolder = await datasetsFolder.GetFolderAsync(DatasetName);
+
+            if (sourceFolder == null) { return; }
+
+            string allLabels = "";
+
+            int labelFiles = 0;
+            int imageFiles = 0;
+
+            StorageFile initialLabelFile = null;
+            StorageFile initialImageFile = null;
+
+            List<DataItem> dataItems = new List<DataItem>();
+
+
+            initialLabelFile = await sourceFolder.TryGetItemAsync("Labels.txt") as StorageFile;
+            
+
+            foreach (var file in await sourceFolder.GetFilesAsync())
+            {
+                if (file.Name == "Labels.txt")
+                {
+                    initialLabelFile = await sourceFolder.GetFileAsync(file.Name);
+                    labelFiles++;
+                }
+                else if (file.Name.Contains("Label"))
+                {
+                    labelFiles++;
+                }
+                else if (file.Name == "Image.png")
+                {
+                    initialImageFile = await sourceFolder.GetFileAsync(file.Name);
+                    imageFiles++;
+                }
+                else if (file.Name.Contains("Image"))
+                {
+                    imageFiles++;
+                }
+
+            }
+
+            if (initialLabelFile != null && initialImageFile != null)
+            {
+                allLabels += await FileIO.ReadTextAsync(initialLabelFile);
+                DataItem firstDataItem = new DataItem
+                {
+                    Label = allLabels[0].ToString()
+                };
+
+                using (var stream = await initialImageFile.OpenReadAsync())
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    await bitmapImage.SetSourceAsync(stream);
+                    firstDataItem.Image = bitmapImage;
+                }
+
+                dataItems.Add(firstDataItem);
+            }
+           
+
+            for (int i = 2; i <= labelFiles; i++)
+            {
+                allLabels += await FileIO.ReadTextAsync(await sourceFolder.GetFileAsync($"Labels ({i}).txt"),
+                        Windows.Storage.Streams.UnicodeEncoding.Utf8);
+
+                if (allLabels.Length > 40)
+                {
+                    break;
+                }
+            }
+
+            int iterations = imageFiles < 20 ? imageFiles : 20;
+
+            for (int i = 2; i <= iterations; i++)
+            {
+                DataItem currentItem = new DataItem();
+
+                currentItem.Label = allLabels[i * 2 - 2].ToString();
+
+                StorageFile currentSourceFile = await sourceFolder.GetFileAsync($"Image ({i}).png");
+
+                using (var stream = await currentSourceFile.OpenReadAsync())
+                {
+                    BitmapImage bitmapImage = new BitmapImage();
+                    await bitmapImage.SetSourceAsync(stream);
+                    currentItem.Image = bitmapImage;
+                }
+
+                dataItems.Add(currentItem);
+            }
+
+            Gv_Data.ItemsSource = dataItems;
+            
         }
 
         private async void Cmd_DeleteDataset_Click(object sender, RoutedEventArgs e)

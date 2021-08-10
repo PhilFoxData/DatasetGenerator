@@ -128,6 +128,7 @@
     <Compile Include="ConfirmDeleteDialog.xaml.cs">
       <DependentUpon>ConfirmDeleteDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DataItem.cs" />
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetGeneratorSettings.cs" />
     <Compile Include="GenerateData.xaml.cs">
