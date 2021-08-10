@@ -10,5 +10,7 @@ namespace DatasetGenerator
         public static Dataset NewDataset { get; set;}
 
         public static DatasetGeneratorSettings Settings { get; set; }
+
+        public static string DeleteDatsetName { get; set; }
     }
 }

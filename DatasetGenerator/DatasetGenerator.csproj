@@ -125,6 +125,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ConfirmDeleteDialog.xaml.cs">
+      <DependentUpon>ConfirmDeleteDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dataset.cs" />
     <Compile Include="DatasetGeneratorSettings.cs" />
     <Compile Include="GenerateData.xaml.cs">
@@ -216,6 +219,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="ConfirmDeleteDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="GenerateData.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
