@@ -1,0 +1,29 @@
+﻿<Page
+    x:Class="DatasetGenerator.NewDataEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DatasetGenerator"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded">
+
+    <ScrollViewer>
+        <StackPanel Margin="10">
+            <TextBlock Text="Zeichne eine 0" FontSize="50" Margin="0,50,0,30" x:Name="Txb_Label" TextAlignment="Center"/>
+            <InkToolbar TargetInkCanvas="{x:Bind ICv_Image}" HorizontalAlignment="Center"/>
+            <Border BorderThickness="3" BorderBrush="Black" Width="150" HorizontalAlignment="Center" Background="Black"
+                    x:Name="Bdr_InkFrame" Margin="0,20,0,0">
+                <InkCanvas Height="{Binding ElementName=Bdr_InkFrame, Path=Width}"
+                           Width="{Binding ElementName=Bdr_InkFrame, Path=Width}" x:Name="ICv_Image"
+                           Loaded="ICv_Image_Loaded"/>
+            </Border>
+            <Button x:Name="Cmd_Confirm" Content="Bestätigen" Margin="0,50,0,0" Height="100" Width="150" CornerRadius="10" FontSize="20"
+                Click="Cmd_Confirm_Click" Background="LightGreen" HorizontalAlignment="Center" BorderBrush="Green" BorderThickness="3"
+                    IsEnabled="False"/>
+            <Button x:Name="Cmd_Stop" Content="Aufhören" Margin="0,10,0,0" Height="100" Width="150" CornerRadius="10" FontSize="20"
+                Click="Cmd_Stop_Click" Background="Yellow" HorizontalAlignment="Center" BorderBrush="#FFAA00" BorderThickness="3"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

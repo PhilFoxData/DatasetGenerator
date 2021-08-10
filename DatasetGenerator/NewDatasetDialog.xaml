@@ -1,0 +1,22 @@
+﻿<ContentDialog
+    x:Class="DatasetGenerator.NewDatasetDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DatasetGenerator"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Neuer Datensatz"
+    PrimaryButtonText="Abbrechen"
+    SecondaryButtonText="OK"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick">
+
+    <StackPanel>
+        <TextBox PlaceholderText="Name des datensatzes" Margin="0,0,0,10" x:Name="Txt_Name"
+                 TextChanged="Txt_Name_TextChanged"/>
+        <TextBox PlaceholderText="Kurze Beschreibung" AcceptsReturn="True" Height="100" Margin="0,0,0,10" x:Name="Txt_Discription"/>
+        <TextBox PlaceholderText="Auflösung" Margin="0,0,0,10" x:Name="Txt_Resolution" Text="50" IsEnabled="False"/>
+        <TextBox PlaceholderText="Gesamtlänge" x:Name="Txt_Length" Text="1000000" IsEnabled="False"/>
+    </StackPanel>
+</ContentDialog>

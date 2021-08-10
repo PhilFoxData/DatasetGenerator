@@ -1,0 +1,43 @@
+﻿<Page
+    x:Class="DatasetGenerator.Settings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:DatasetGenerator"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Margin="10">
+        <TextBlock FontSize="30" Text="Einstellungen"/>
+
+        <TextBlock Text="Bedienungsanleitung" FontSize="20" Margin="0,25,0,0"/>
+        <TextBlock Margin="0,10,0,0">
+            <Run>Die Dataset Generator App dient der Erzeugung von Datensätzen für das trainieren von Machine Learning Anwendungen.</Run>
+            <LineBreak/>
+            <Run>Der Kern der Awendung ist ein Zeichenbereich mit dem beispielsweise handgeschriebene Ziffern oder Buchstaben gezeichnet werden.</Run>
+            <LineBreak/>
+            <LineBreak/>
+            <Run>Die App kann mehrere Datensätze parallel verwalten. Ein Datensatz kann auf der "Daten managen" Seite angelegt werden,</Run>
+            <LineBreak/>
+            <Run>dazu muss der eindeutige Name und optional eine kurze Beschreibung angegeben werden. Die Eingabefelder zu Auflösung und</Run>
+            <LineBreak/>
+            <Run>Menge der Daten sind gesperrt, da diese Funktionalitäten erst in einer späteren Version realisiert werden.</Run>
+            <LineBreak/>
+            <Run>Ebenfalls in der Rubrik "Daten managen" ist die Schaltfläche "Exportieren" verfügbar, damit wird der gesamte Datensatzinhalt</Run>
+            <LineBreak/>
+            <Run>in einen Zielordner exportiert, evtl in diesem Ordner enthaltene Dateien können verloren gehen (durch Überschreibung).</Run>
+            <LineBreak/>
+            <LineBreak/>
+            <Run>Im Bereich "Daten generieren" können für einen bestehenden Datensatz neue Daten generiert werden.</Run>
+            <LineBreak/>
+            <Run>Nach der Auswahl des entsprechenden Datensatzes können die neuen Daten im Zeichenberich erzeugt werden,</Run>
+            <LineBreak/>
+            <Run>überhalb des Zeichenbereichs gibt die App den gewünschten Inhalt der Zeichnung an, diese Angabe ist die Grundlage</Run>
+            <LineBreak/>
+            <Run>für das anschließende Labeln der Daten. Die generierten Daten werden immer nach 10 Eingaben zur Sicherheit zwischen-</Run>
+            <LineBreak/>
+            <Run>gespeichert. Nach dem Ende der Datenerzeugung werden die verbleibenden Daten über die Schaltfläche "Aufhören" gesichert.</Run>
+        </TextBlock>
+    </StackPanel>
+</Page>
