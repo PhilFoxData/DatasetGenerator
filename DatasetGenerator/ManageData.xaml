@@ -5,6 +5,7 @@
     xmlns:local="using:DatasetGenerator"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
@@ -50,8 +51,8 @@
             </ListView>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-            <GridView x:Name="Gv_Data">
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,10,0,0">
+            <GridView x:Name="Gv_Data" IsItemClickEnabled="True" ItemClick="Gv_Data_ItemClick">
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>

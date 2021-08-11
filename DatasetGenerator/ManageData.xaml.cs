@@ -4,19 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.Storage.Pickers;
-using System.Threading.Tasks;
-using System.Threading;
 using Windows.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Controls;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
@@ -27,6 +20,9 @@ namespace DatasetGenerator
     /// </summary>
     public sealed partial class ManageData : Page
     {
+        uint NUMBER_OF_ITEMS_TO_LOAD = 100;
+
+
         public ManageData()
         {
             InitializeComponent();
@@ -129,6 +125,7 @@ namespace DatasetGenerator
                 Cmd_DeleteDataset.IsEnabled = true;
 
                 Load_Images((Lsv_Datasets.SelectedItem as Dataset).Name);
+                
             }
         }
 
@@ -141,9 +138,6 @@ namespace DatasetGenerator
 
             string allLabels = "";
 
-            int labelFiles = 0;
-            int imageFiles = 0;
-
             StorageFile initialLabelFile = null;
             StorageFile initialImageFile = null;
 
@@ -151,30 +145,8 @@ namespace DatasetGenerator
 
 
             initialLabelFile = await sourceFolder.TryGetItemAsync("Labels.txt") as StorageFile;
-            
+            initialImageFile = await sourceFolder.TryGetItemAsync("Image.png") as StorageFile;
 
-            foreach (var file in await sourceFolder.GetFilesAsync())
-            {
-                if (file.Name == "Labels.txt")
-                {
-                    initialLabelFile = await sourceFolder.GetFileAsync(file.Name);
-                    labelFiles++;
-                }
-                else if (file.Name.Contains("Label"))
-                {
-                    labelFiles++;
-                }
-                else if (file.Name == "Image.png")
-                {
-                    initialImageFile = await sourceFolder.GetFileAsync(file.Name);
-                    imageFiles++;
-                }
-                else if (file.Name.Contains("Image"))
-                {
-                    imageFiles++;
-                }
-
-            }
 
             if (initialLabelFile != null && initialImageFile != null)
             {
@@ -191,30 +163,32 @@ namespace DatasetGenerator
                     firstDataItem.Image = bitmapImage;
                 }
 
+                firstDataItem.ImageSourceFileName = "Image.png";
                 dataItems.Add(firstDataItem);
             }
-           
 
-            for (int i = 2; i <= labelFiles; i++)
+            int labelsIndex = 2;
+            while (allLabels.Length < NUMBER_OF_ITEMS_TO_LOAD * 2)
             {
-                allLabels += await FileIO.ReadTextAsync(await sourceFolder.GetFileAsync($"Labels ({i}).txt"),
-                        Windows.Storage.Streams.UnicodeEncoding.Utf8);
-
-                if (allLabels.Length > 40)
+                StorageFile nextfile = await sourceFolder.TryGetItemAsync($"Labels ({labelsIndex}).txt") as StorageFile;
+                if (nextfile == null)
                 {
                     break;
                 }
+                allLabels += await FileIO.ReadTextAsync(nextfile);
+                labelsIndex++;
             }
 
-            int iterations = imageFiles < 20 ? imageFiles : 20;
 
-            for (int i = 2; i <= iterations; i++)
+            for (int i = 2; i <= allLabels.Length / 2 - 2; i++)
             {
-                DataItem currentItem = new DataItem();
-
-                currentItem.Label = allLabels[i * 2 - 2].ToString();
+                DataItem currentItem = new DataItem
+                {
+                    Label = allLabels[i * 2 - 2].ToString()
+                };
 
                 StorageFile currentSourceFile = await sourceFolder.GetFileAsync($"Image ({i}).png");
+                currentItem.ImageSourceFileName = currentSourceFile.Name;
 
                 using (var stream = await currentSourceFile.OpenReadAsync())
                 {
@@ -250,6 +224,8 @@ namespace DatasetGenerator
 
                 Transmitter.Datasets.Remove(Lsv_Datasets.SelectedItem as  Dataset);
                 Lsv_Datasets.Items.Remove(Lsv_Datasets.SelectedItem);
+                Gv_Data.ItemsSource = null;
+                Gv_Data.Items.Clear();
             }
         }
 
@@ -349,6 +325,164 @@ namespace DatasetGenerator
             }
 
             Stc_ExportProgress.Visibility = Visibility.Collapsed;
+        }
+
+        private async void Gv_Data_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            DataItem currentItem = (DataItem)e.ClickedItem;
+
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = "Diesen Eintrag löschen",
+                PrimaryButtonText = "Abbrechen",
+                SecondaryButtonText = "OK",
+            };
+
+            StackPanel stc_DialogContent = new StackPanel();
+            stc_DialogContent.Orientation = Orientation.Vertical;
+
+            TextBlock txb_Message = new TextBlock
+            {
+                Text = "Dieser Eintrag wird unwideruflich gelöscht.\n" +
+                        "Abhängig von der Größe des Datensatzes kann\n" +
+                        " dies einige Zeit in Anspruch nehmen"
+            };
+
+            Image img_Image = new Image
+            {
+                Source = currentItem.Image,
+                Margin = new Thickness(0, 10, 0, 0),
+                Height = 100,
+                Width = 100
+            };
+
+            stc_DialogContent.Children.Add(txb_Message);
+            stc_DialogContent.Children.Add(img_Image);
+
+            dialog.Content = stc_DialogContent;
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Secondary)
+            {
+                int labelsDeletePosition = 0;
+
+                string imageFileName = currentItem.ImageSourceFileName;
+
+                if (imageFileName == "Image.png")
+                {
+                    labelsDeletePosition = 0;
+                }
+                else
+                {
+                    string imageFileNumber = "";
+
+                    int imageIndex = 7;
+                    while (imageFileName[imageIndex] != ')')
+                    {
+                        imageFileNumber += imageFileName[imageIndex];
+                        imageIndex++;
+                    }
+
+                    labelsDeletePosition = Convert.ToInt32(imageFileNumber) * 2 - 2;
+                }
+
+                StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
+                StorageFolder currentFolder = await datasetsFolder.GetFolderAsync((Lsv_Datasets.SelectedItem as Dataset).Name);
+
+                List<string> allLabelsStringList = new List<string>();
+                int allLabelsLength = 0;
+
+                StorageFile initialLabelsFile = await currentFolder.TryGetItemAsync("Labels.txt") as StorageFile;
+
+
+                if (initialLabelsFile != null)
+                {
+                    string newItems = await FileIO.ReadTextAsync(initialLabelsFile);
+                    allLabelsStringList.Add(newItems);
+                    allLabelsLength += newItems.Length;
+                }
+
+                int index = 2;
+                while(allLabelsLength <= labelsDeletePosition + 1)
+                {
+                    StorageFile nextFile = await currentFolder.TryGetItemAsync($"Labels ({index}).txt") as StorageFile;
+                    
+                    if (nextFile == null)
+                    {
+                        break;
+                    }
+
+                    string newItems = await FileIO.ReadTextAsync(nextFile);
+
+                    allLabelsStringList.Add(newItems);
+                    allLabelsLength += newItems.Length;
+                }
+
+                string lastListItem = allLabelsStringList[allLabelsStringList.Count - 1];
+
+                int deletePositionFromBack = allLabelsLength - labelsDeletePosition;
+                int deletePositonFromBeginning = lastListItem.Length - deletePositionFromBack;
+
+                lastListItem = lastListItem.Remove(deletePositonFromBeginning, 2);
+
+                if (allLabelsStringList.Count == 1)
+                {
+                    await FileIO.WriteTextAsync(await currentFolder.GetFileAsync("Labels.txt"), lastListItem);
+                }
+                else
+                {
+                    await FileIO.WriteTextAsync(await currentFolder.GetFileAsync(
+                        $"Labels ({allLabelsStringList.Count}).txt"), lastListItem);
+                }
+
+                StorageFile imageFile = await currentFolder.GetFileAsync(imageFileName);
+                await imageFile.DeleteAsync();
+
+                if (imageFileName == "Image.png")
+                {
+                    StorageFile newFirstFile = await currentFolder.TryGetItemAsync("Image (2).png") as StorageFile;
+                    if (newFirstFile != null)
+                    {
+                        await newFirstFile.RenameAsync("Image.png");
+                    }
+
+                    int deleteSpecialTreatmentIndex = 3;
+
+                    StorageFile nextDeleteSpecialTreatmentFile = await currentFolder.TryGetItemAsync(
+                            $"Image ({deleteSpecialTreatmentIndex}).png") as StorageFile;
+
+                    while (nextDeleteSpecialTreatmentFile != null)
+                    {
+                        await nextDeleteSpecialTreatmentFile.RenameAsync($"Image ({deleteSpecialTreatmentIndex - 1}).png");
+                        deleteSpecialTreatmentIndex++;
+                        nextDeleteSpecialTreatmentFile = await currentFolder.TryGetItemAsync(
+                            $"Image ({deleteSpecialTreatmentIndex}).png") as StorageFile;
+                    }
+                }
+                else
+                {
+                    string deleteIndexString = "";
+                    int deleteIndexIntIterator = 7;
+
+                    while (imageFileName[deleteIndexIntIterator] != ')')
+                    {
+                        deleteIndexString += imageFileName[deleteIndexIntIterator];
+                        deleteIndexIntIterator++;
+                    }
+
+                    int deleteIndexInt = Convert.ToInt32(deleteIndexString);
+
+                    StorageFile nextDeleteFile = await currentFolder.TryGetItemAsync(
+                            $"Image ({deleteIndexInt}).png") as StorageFile;
+
+                    while (nextDeleteFile != null)
+                    {
+                        await nextDeleteFile.RenameAsync($"Image ({deleteIndexInt - 1}).png");
+                        nextDeleteFile = await currentFolder.TryGetItemAsync($"Image ({deleteIndexInt}).png")
+                            as StorageFile;
+                        deleteIndexInt++;
+                    }
+                }
+            }
         }
     }
 }

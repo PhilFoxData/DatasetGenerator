@@ -5,6 +5,7 @@
     xmlns:local="using:DatasetGenerator"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:Microsoft.Toolkit.Uwp.UI"
     mc:Ignorable="d"
     Title="Neuer Datensatz"
     PrimaryButtonText="Abbrechen"
@@ -14,8 +15,10 @@
 
     <StackPanel>
         <TextBox PlaceholderText="Name des datensatzes" Margin="0,0,0,10" x:Name="Txt_Name"
-                 TextChanged="Txt_Name_TextChanged"/>
-        <TextBox PlaceholderText="Kurze Beschreibung" AcceptsReturn="True" Height="100" Margin="0,0,0,10" x:Name="Txt_Discription"/>
+                 TextChanged="Txt_Name_TextChanged" MaxLength="20" ui:TextBoxExtensions.ValidationMode="Dynamic"
+                 ui:TextBoxExtensions.Regex="[a-zA-Z_0-9]"/>
+        <TextBox PlaceholderText="Kurze Beschreibung" AcceptsReturn="True" Height="100" Margin="0,0,0,10" x:Name="Txt_Discription"
+                 MaxLength="200"/>
         <TextBox PlaceholderText="Auflösung" Margin="0,0,0,10" x:Name="Txt_Resolution" Text="50" IsEnabled="False"/>
         <TextBox PlaceholderText="Gesamtlänge" x:Name="Txt_Length" Text="1000000" IsEnabled="False"/>
     </StackPanel>
