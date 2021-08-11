@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.Storage;
 using System.Text.Json;
 using Windows.Storage.Pickers;
+using System.Threading.Tasks;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x407 dokumentiert.
 
@@ -45,7 +46,6 @@ namespace DatasetGenerator
         private async void Page_Loaded(object _, RoutedEventArgs _1)
         {
             Frm_Content.Navigate(typeof(Home));
-
 
             StorageFolder rootFolder = ApplicationData.Current.LocalFolder;
 
@@ -95,9 +95,9 @@ namespace DatasetGenerator
 
         // >>>>> DEVELOPMENT UTILITIES <<<<<
 
-        //This code is used for development purpose only, don't it include in development
+        //This code is used for development purpose only, don't include it in conventional code
 
-        static async void DeleteAllData()
+        static async Task DeleteAllData()
         {
             StorageFolder rootFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
 
@@ -105,6 +105,8 @@ namespace DatasetGenerator
             {
                 await item.DeleteAsync();
             }
+
+            Application.Current.Exit();
         }
 
         static async void ReadAllInternalData()

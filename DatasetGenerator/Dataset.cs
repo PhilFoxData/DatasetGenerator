@@ -15,6 +15,12 @@ namespace DatasetGenerator
         {
             NewLabels = new List<string>();
             ImageData = new List<IBuffer>();
+            NamesOfFiles = new List<string>[10];
+
+            for (int i = 0; i < 10; i++)
+            {
+                NamesOfFiles[i] = new List<string>();
+            }
         }
 
         public string Name
@@ -48,6 +54,8 @@ namespace DatasetGenerator
 
         public int ImageResolution { get; set; }
 
+        public List<string>[] NamesOfFiles { get; set; }
+
         public void SaveRemainingNewData()
         {
             List<string> clonedLabels = new List<string>(NewLabels);
@@ -68,55 +76,60 @@ namespace DatasetGenerator
 
                 NewLabels.Clear();
                 ImageData.Clear();
-
+                
                 WriteOutData(clonedLabels, clonedImageData);
             }
         }
 
-        private async void WriteOutData( List<string> clonedLabels, List<IBuffer> clonedImageData)
+        private async void WriteOutData(List<string> clonedLabels, List<IBuffer> clonedImageData)
         {
             StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
-            StorageFolder currentDSFolder = await datasetsFolder.GetFolderAsync(Name);
-            StorageFile NewLabelsFile = await currentDSFolder.CreateFileAsync("Labels.txt", CreationCollisionOption.GenerateUniqueName);
-
-            string LabelsString = "";
+            StorageFolder currentDatasetFolder = await datasetsFolder.GetFolderAsync(Name);
 
             for (int i = 0; i < clonedLabels.Count; i++)
             {
-                LabelsString += clonedLabels[i] + ";";
-            }
+                StorageFolder currentImageFolder = await currentDatasetFolder.GetFolderAsync(clonedLabels[i]);
 
-            await FileIO.WriteTextAsync(NewLabelsFile, LabelsString);
+                StorageFile newFile = await currentImageFolder.CreateFileAsync("Image.png",
+                        CreationCollisionOption.GenerateUniqueName);
 
-            for (int i = 0; i < clonedImageData.Count; i++)
-            {
-                StorageFile NewImageFile = await currentDSFolder.CreateFileAsync("Image.png", CreationCollisionOption.GenerateUniqueName);
+                NamesOfFiles[Convert.ToInt32(clonedLabels[i])].Add(newFile.Name);
 
-                using (var stream = await NewImageFile.OpenAsync(FileAccessMode.ReadWrite))
+
+                using (var stream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
                 {
-                    SoftwareBitmap softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(clonedImageData[i], BitmapPixelFormat.Bgra8,
-                            NewRenderTargetsSize, NewRenderTargetsSize);
+                    SoftwareBitmap softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(clonedImageData[i],
+                            BitmapPixelFormat.Bgra8, NewRenderTargetsSize, NewRenderTargetsSize);
 
-                    BitmapEncoder bitmapEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream);
+                    BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId,
+                            stream);
 
-                    bitmapEncoder.SetSoftwareBitmap(softwareBitmap);
+                    encoder.SetSoftwareBitmap(softwareBitmap);
 
-                    bitmapEncoder.BitmapTransform.ScaledHeight = 50;
-                    bitmapEncoder.BitmapTransform.ScaledWidth = 50;
+                    encoder.BitmapTransform.ScaledHeight = 50;
+                    encoder.BitmapTransform.ScaledWidth = 50;
 
-                    await bitmapEncoder.FlushAsync();
+                    await encoder.FlushAsync();
                     await stream.FlushAsync();
                 }
             }
+
+            StorageFile jsonFile = await currentDatasetFolder.GetFileAsync("Dataset_Info.json");
+            await FileIO.WriteTextAsync(jsonFile, JsonSerializer.Serialize(this));
         }
 
         public async Task CreateDataset()
         {
-            StorageFolder datasetFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
-
-            StorageFolder newRootfolder = await datasetFolder.CreateFolderAsync(Name);
-
-            StorageFile jsonFile = await newRootfolder.CreateFileAsync("Dataset_Info.json");
+            StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
+            
+            StorageFolder newDatasetfolder = await datasetsFolder.CreateFolderAsync(Name);
+            
+            StorageFile jsonFile = await newDatasetfolder.CreateFileAsync("Dataset_Info.json");
+            
+            for (int i = 0; i < 10; i++)
+            {
+                await newDatasetfolder.CreateFolderAsync(i.ToString());
+            }
 
             string jsonString = JsonSerializer.Serialize(this);
 

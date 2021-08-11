@@ -35,10 +35,19 @@ namespace DatasetGenerator
 
         string Label = "";
         Random random = new Random(DateTime.Now.Millisecond);
+        int lastRandomNumber = -1;
 
         private void SetNewLabel()
         {
             int newNumber = random.Next(0, 10);
+
+            while (newNumber == lastRandomNumber)
+            {
+                newNumber = random.Next(0, 10);
+            }
+
+            lastRandomNumber = newNumber;
+
             Label = newNumber.ToString();
             Txb_Label.Text = "Zeichne eine: " + Label;
         }
