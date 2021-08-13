@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Windows.UI.Xaml.Controls;
 
 // Die Elementvorlage "Inhaltsdialogfeld" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
@@ -24,7 +25,7 @@ namespace DatasetGenerator
                 Name = Txt_Name.Text.Replace(' ', '_'),
                 Discription = Txt_Discription.Text,
                 DesiredLength = Convert.ToInt32(Txt_Length.Text),
-                ImageResolution = Convert.ToInt32(Txt_Resolution.Text),
+                ImageResolution = Convert.ToInt32(Txt_Resolution.Text)
             };
 
             Transmitter.NewDataset = newDataset;
