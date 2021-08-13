@@ -11,6 +11,7 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Controls;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 // Die Elementvorlage "Leere Seite" wird unter https://go.microsoft.com/fwlink/?LinkId=234238 dokumentiert.
 
@@ -21,7 +22,7 @@ namespace DatasetGenerator
     /// </summary>
     public sealed partial class ManageData : Page
     {
-        private readonly uint NUMBER_OF_ITEMS_TO_LOAD = 10000;
+        private readonly uint NUMBER_OF_ITEMS_TO_LOAD = 100;
 
 
         public ManageData()
@@ -174,95 +175,132 @@ namespace DatasetGenerator
 
             StorageFolder sourceFolder = await picker.PickSingleFolderAsync();
 
+            if (sourceFolder == null)
+            {
+                return;
+            }
+
+            ContentDialog dialog = new NewDatasetDialog();
+
+            if (await dialog.ShowAsync() == ContentDialogResult.Secondary)
+            {
+                Dataset newDataset = Transmitter.NewDataset;
+                await newDataset.CreateDataset();
+
+                StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
+                StorageFolder targetFolder = await datasetsFolder.GetFolderAsync(Transmitter.NewDataset.Name);
+
+                StorageFile jsonFile = await targetFolder.GetFileAsync("Dataset_Info.json");
+
+                try
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        StorageFolder currentLabelsSourceFolder = await sourceFolder.GetFolderAsync(i.ToString());
+                        StorageFolder currentLabelsTargetFolder = await targetFolder.GetFolderAsync(i.ToString());
+
+                        foreach (var item in await currentLabelsSourceFolder.GetFilesAsync())
+                        {
+                            string newName = (await item.CopyAsync(targetFolder, "Image.png",
+                                    NameCollisionOption.GenerateUniqueName)).Name;
+                            newDataset.NamesOfFiles[i].Add(newName);
+                        }
+                    }
+
+                    await FileIO.WriteTextAsync(jsonFile, JsonSerializer.Serialize(newDataset));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
+
+        private async Task Import_First_Generation()
+        {
+            FolderPicker picker = new FolderPicker();
+            picker.FileTypeFilter.Add("*");
+
+            StorageFolder sourceFolder = await picker.PickSingleFolderAsync();
 
             if (sourceFolder == null)
             {
                 return;
             }
 
-            Txb_Progress.Text = "Importiere...";
-            Stc_ExportProgress.Visibility = Visibility.Visible;
+            ContentDialog dialog = new NewDatasetDialog();
 
-            try
+            if (await dialog.ShowAsync() == ContentDialogResult.Secondary)
             {
-                StorageFile labelsFile = await sourceFolder.GetFileAsync("Labels.txt");
+                Stc_ExportProgress.Visibility = Visibility.Visible;
 
-                ContentDialog newDatasetDialog = new NewDatasetDialog();
+                Dataset newDataset = Transmitter.NewDataset;
+                await newDataset.CreateDataset();
 
-                if (await newDatasetDialog.ShowAsync() == ContentDialogResult.Primary)
+                try
                 {
-                    return;
-                }
+                    string allLabelsString = "";
 
-                await Transmitter.NewDataset.CreateDataset();
+                    StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
+                    StorageFolder targetFolder = await datasetsFolder.GetFolderAsync(newDataset.Name);
 
-                StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
-                StorageFolder targetFolder = await datasetsFolder.GetFolderAsync(Transmitter.NewDataset.Name);
+                    StorageFile initalLabelsFile = await sourceFolder.TryGetItemAsync("Labels.txt") as StorageFile;
 
-                await labelsFile.CopyAsync(targetFolder);
-
-                foreach (var item in await sourceFolder.GetFilesAsync())
-                {
-                    if (item.Name.Contains("Image"))
+                    if (initalLabelsFile != null)
                     {
-                        if (item.Name == "Image_1.png")
-                        {
-                            StorageFile targetFile = await item.CopyAsync(targetFolder);
-                            await targetFile.RenameAsync("Image.png");
-                        }
-                        else
-                        {
-                            StorageFile targetFile = await item.CopyAsync(targetFolder);
-                            string newContent = "";
-
-                            int index = 6;
-
-                            while (true)
-                            {
-                                if (item.Name[index] != '.')
-                                {
-                                    newContent += item.Name[index];
-                                }
-                                else
-                                {
-                                    break;
-                                }
-
-                                index++;
-                            }
-
-                            string newName = $"Image ({newContent}).png";
-
-
-                            await targetFile.RenameAsync(newName);
-                        }
+                        allLabelsString += await FileIO.ReadTextAsync(initalLabelsFile);
                     }
+
+                    int nextLabelsFileIterator = 2;
+                    StorageFile nextLabelsFile = await sourceFolder.TryGetItemAsync($"Labels (2).txt") as StorageFile;
+
+                    while (nextLabelsFile != null)
+                    {
+                        allLabelsString += await FileIO.ReadTextAsync(nextLabelsFile);
+                        nextLabelsFileIterator++;
+                        nextLabelsFile = await sourceFolder.TryGetItemAsync($"Labels ({nextLabelsFileIterator}).png") as StorageFile;
+                    }
+
+                    StorageFile initialImageFile = await sourceFolder.TryGetItemAsync("Image_1.png") as StorageFile;
+                    if (initialImageFile != null)
+                    {
+                        string initalImageFileLabel = allLabelsString[0].ToString();
+
+                        StorageFolder initialImageLabelFolder = await targetFolder.GetFolderAsync(initalImageFileLabel);
+                        await initialImageFile.CopyAsync(targetFolder, "Image.png");
+                        newDataset.NamesOfFiles[Convert.ToInt32(initalImageFileLabel)].Add("Image.png");
+                    }
+
+                    int nextImageFileIterator = 2;
+                    StorageFile nextImageFile = await sourceFolder.TryGetItemAsync(
+                            $"Image_{nextImageFileIterator}.png") as StorageFile;
+
+                    while (nextImageFile != null)
+                    {
+                        int currentLabel = Convert.ToInt32(allLabelsString[nextImageFileIterator * 2 - 2].ToString());
+
+                        StorageFolder targetLabelsFolder = await targetFolder.GetFolderAsync(currentLabel.ToString());
+
+                        StorageFile copiedFile = await nextImageFile.CopyAsync(targetLabelsFolder,
+                                "Image.png", NameCollisionOption.GenerateUniqueName);
+
+                        newDataset.NamesOfFiles[currentLabel].Add(copiedFile.Name);
+
+                        nextImageFileIterator++;
+                        nextImageFile = await sourceFolder.TryGetItemAsync($"Image_{nextImageFileIterator}.png")
+                                as StorageFile;
+                    }
+
+                    StorageFile jsonFile = await targetFolder.GetFileAsync("Dataset_Info.json");
+                    await FileIO.WriteTextAsync(jsonFile, JsonSerializer.Serialize(newDataset));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
                 }
 
-                Transmitter.Datasets.Add(Transmitter.NewDataset);
-                Lsv_Datasets.Items.Add(Transmitter.NewDataset);
+                Stc_ExportProgress.Visibility = Visibility.Collapsed;
             }
-            catch (Exception)
-            {
-                StorageFolder datasetsFolder = await ApplicationData.Current.LocalFolder.GetFolderAsync("Datasets");
-                IStorageItem targetFolder = await datasetsFolder.TryGetItemAsync(Transmitter.NewDataset.Name);
-
-                if (targetFolder != null)
-                {
-                    await targetFolder.DeleteAsync(StorageDeleteOption.PermanentDelete);
-                }
-
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Importfehler",
-                    Content = "Die Daten haben das falsche Format",
-                    PrimaryButtonText = "OK"
-                };
-
-                await dialog.ShowAsync();
-            }
-
-            Stc_ExportProgress.Visibility = Visibility.Collapsed;
         }
 
         private async void Gv_Data_ItemClick(object sender, ItemClickEventArgs e)
