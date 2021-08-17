@@ -208,7 +208,7 @@ namespace DatasetGenerator
                                     NameCollisionOption.GenerateUniqueName)).Name;
                             newDataset.NamesOfFiles[i].Add(newName);
                         }
-                    }
+                    } 
 
                     await FileIO.WriteTextAsync(jsonFile, JsonSerializer.Serialize(newDataset));
 
