@@ -55,7 +55,7 @@
             <GridView x:Name="Gv_Data" IsItemClickEnabled="True" ItemClick="Gv_Data_ItemClick">
                 <GridView.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Margin="5" CornerRadius="5" Background="LightGray">
+                        <StackPanel Margin="5" CornerRadius="5" Background="{ThemeResource Scb_SecondColor}">
                             <Image Source="{Binding Image}" Height="75" Width="75"/>
                             <TextBlock Text="{Binding Label}" Width="75" HorizontalAlignment="Stretch"
                                        FontWeight="Bold"
