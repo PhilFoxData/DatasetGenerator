@@ -184,6 +184,9 @@ namespace DatasetGenerator
 
             if (await dialog.ShowAsync() == ContentDialogResult.Secondary)
             {
+                Txb_Progress.Text = "Importiere...";
+                Stc_ExportProgress.Visibility = Visibility.Visible;
+
                 Dataset newDataset = Transmitter.NewDataset;
                 await newDataset.CreateDataset();
 
@@ -201,19 +204,24 @@ namespace DatasetGenerator
 
                         foreach (var item in await currentLabelsSourceFolder.GetFilesAsync())
                         {
-                            string newName = (await item.CopyAsync(targetFolder, "Image.png",
+                            string newName = (await item.CopyAsync(currentLabelsTargetFolder, "Image.png",
                                     NameCollisionOption.GenerateUniqueName)).Name;
                             newDataset.NamesOfFiles[i].Add(newName);
                         }
-                    }
+                    } 
 
                     await FileIO.WriteTextAsync(jsonFile, JsonSerializer.Serialize(newDataset));
+
+                    Transmitter.Datasets.Add(newDataset);
+                    Lsv_Datasets.Items.Add(newDataset);
                 }
                 catch (Exception ex)
                 {
                     throw ex;
                 }
             }
+
+            Stc_ExportProgress.Visibility = Visibility.Collapsed;
         }
 
         private async Task Import_First_Generation()
