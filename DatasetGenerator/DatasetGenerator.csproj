@@ -153,6 +153,7 @@
     <Compile Include="Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ThemeHelper.cs" />
     <Compile Include="Transmitter.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,20 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:DatasetGenerator">
 
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="Scb_SecondColor" Color="LightGray"/>
+                    <SolidColorBrush x:Key="Scb_InactiveTitlebar" Color="White"/>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="Scb_SecondColor" Color="#282A2B"/>
+                    <SolidColorBrush x:Key="Scb_InactiveTitlebar" Color="#1D1E1F"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>
 
 
