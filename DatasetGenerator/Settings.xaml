@@ -39,5 +39,16 @@
             <LineBreak/>
             <Run>gespeichert. Nach dem Ende der Datenerzeugung werden die verbleibenden Daten über die Schaltfläche "Aufhören" gesichert.</Run>
         </TextBlock>
+        
+        <ComboBox Header="Farbmodus wählen" x:Name="Cbx_ColorMode" SelectionChanged="Cbx_ColorMode_OnSelectionChanged" Margin="0,21,0,0">
+            <ComboBox.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" FontWeight="Normal" FontSize="20" Margin="0,0,0,5"/>
+                </DataTemplate>
+            </ComboBox.HeaderTemplate>
+            <x:String>Systemstandard verwenden</x:String>
+            <x:String>Hell</x:String>
+            <x:String>Dunkel</x:String>
+        </ComboBox>
     </StackPanel>
 </Page>

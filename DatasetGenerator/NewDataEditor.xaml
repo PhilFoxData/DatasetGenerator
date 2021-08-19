@@ -13,7 +13,7 @@
         <StackPanel Margin="10">
             <TextBlock Text="Zeichne eine 0" FontSize="50" Margin="0,50,0,30" x:Name="Txb_Label" TextAlignment="Center"/>
             <InkToolbar TargetInkCanvas="{x:Bind ICv_Image}" HorizontalAlignment="Center"/>
-            <Border BorderThickness="3" BorderBrush="Black" Width="150" HorizontalAlignment="Center" Background="Black"
+            <Border BorderThickness="3" BorderBrush="White" Width="150" HorizontalAlignment="Center" Background="Black" CornerRadius="5"
                     x:Name="Bdr_InkFrame" Margin="0,20,0,0">
                 <InkCanvas Height="{Binding ElementName=Bdr_InkFrame, Path=Width}"
                            Width="{Binding ElementName=Bdr_InkFrame, Path=Width}" x:Name="ICv_Image"
