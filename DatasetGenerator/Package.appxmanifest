@@ -8,14 +8,14 @@
 
   <Identity
     Name="c941cc53-1f10-4e71-9a30-3b815401d034"
-    Publisher="CN=phili"
+    Publisher="CN=fastFox2"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="c941cc53-1f10-4e71-9a30-3b815401d034" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>DatasetGenerator</DisplayName>
-    <PublisherDisplayName>phili</PublisherDisplayName>
+    <PublisherDisplayName>PhilfoxData</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

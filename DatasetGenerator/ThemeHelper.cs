@@ -88,6 +88,9 @@ namespace DatasetGenerator
 
                     titleBar.ButtonInactiveBackgroundColor = Colors.White;
                     titleBar.ButtonInactiveForegroundColor = Colors.White;
+
+                    titleBar.ButtonHoverBackgroundColor = Colors.LightGray;
+                    titleBar.ButtonHoverForegroundColor = Colors.Black;
                 }
             }
         }
